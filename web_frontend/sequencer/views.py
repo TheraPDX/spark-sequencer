@@ -1,6 +1,7 @@
 from flask import render_template, jsonify
 from requests import get, post
 import json
+import urllib
 
 from sequencer import app
 
@@ -37,10 +38,11 @@ def post_to_sequencer(function, args):
         app.config['SPARK_CORE_ID'],
         function
         )
+    args = urllib.unquote(args)
     params = { 'access_token': app.config['ACCESS_TOKEN'], 'args': args }
     r = post(uri, params)
     return json.loads(r.content)['return_value']
- 
+
 
 def get_from_sequencer(variable):
     uri = "%s/devices/%s/%s" % (
