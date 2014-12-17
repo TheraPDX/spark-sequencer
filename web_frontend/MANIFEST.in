@@ -1,0 +1,2 @@
+recursive-include sequencer/templates/*
+recursive-include sequencer/static/*

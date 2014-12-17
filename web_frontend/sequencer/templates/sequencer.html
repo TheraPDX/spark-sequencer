@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Light Fiddler</title>
+
+		<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+		<script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+		<script>
+			var ON_TEXT = ":(0):";
+			var OFF_TEXT = "0";
+
+            $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+
+			$(document).ready(function() { get_state() });
+
+			function toggle(relay) { send_request('toggle', relay)  }
+			function on(relays)    { send_request('on',     relays) }
+			function off(relays)   { send_request('off',    relays) }
+			function send_request(func, args)
+			{
+				$.ajax({
+					type: "POST",
+                    url: $SCRIPT_ROOT + '/' + func + '/' + args,
+					success: function(data) { display_current_state(data.new_state); },
+				});
+				return;
+			}
+
+            function get_state()
+            {
+				$.get(
+					$SCRIPT_ROOT + "/get_state",
+					function (data) { display_current_state(data.state); }
+				);
+			}
+
+			function display_current_state (state)
+			{
+				$('#relay1').html((state & 0x1) ? ON_TEXT : OFF_TEXT);
+				$('#relay2').html((state >> 1 & 0x1) ? ON_TEXT : OFF_TEXT);
+				$('#relay3').html((state >> 2 & 0x1) ? ON_TEXT : OFF_TEXT);
+				$('#relay4').html((state >> 3 & 0x1) ? ON_TEXT : OFF_TEXT);
+			}
+		</script>
+	</head>
+	<body>
+		<div class=page>
+			<h1>Light Fiddler</h1>
+			{% for message in get_flashed_messages() %}
+				<div class="flash">{{message}}</div>
+			{% endfor %}
+			<div>
+				<!-- TODO: Get a lightbulb image for these? -->
+				<button type="button" class="relay-button" id="relay4" onclick="toggle(4)">:(0):</button>
+				<button type="button" class="relay-button" id="relay3" onclick="toggle(3)">:(0):</button>
+				<button type="button" class="relay-button" id="relay2" onclick="toggle(2)">:(0):</button>
+				<button type="button" class="relay-button" id="relay1" onclick="toggle(1)">:(0):</button>
+				<br>
+				<button type="button" class="relay-button" id="all_on"  onclick='on("1 2 3 4")'>Turn all lights ON</button>
+				<button type="button" class="relay-button" id="all_off" onclick='off("1 2 3 4")'>Turn all lights OFF</button>
+			</div>
+		</div>
+	</body>
+</html>
