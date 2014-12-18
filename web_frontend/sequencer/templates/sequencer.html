@@ -6,12 +6,18 @@
 		<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 		<script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
 		<script>
-			var ON_TEXT = ":(0):";
-			var OFF_TEXT = "0";
+			var ON_IMG =  "{{ url_for('static', filename='images/bulb_on.svg') }}";
+			var OFF_IMG = "{{ url_for('static', filename='images/bulb_off.svg') }}";
 
             $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
 
-			$(document).ready(function() { get_state() });
+			$(document).ready(function() {
+				get_state();
+				$("#relay1").click(function() {toggle(1)});
+				$("#relay2").click(function() {toggle(2)});
+				$("#relay3").click(function() {toggle(3)});
+				$("#relay4").click(function() {toggle(4)});
+			});
 
 			function toggle(relay) { send_request('toggle', relay)  }
 			function on(relays)    { send_request('on',     relays) }
@@ -36,28 +42,44 @@
 
 			function display_current_state (state)
 			{
-				$('#relay1').html((state & 0x1) ? ON_TEXT : OFF_TEXT);
-				$('#relay2').html((state >> 1 & 0x1) ? ON_TEXT : OFF_TEXT);
-				$('#relay3').html((state >> 2 & 0x1) ? ON_TEXT : OFF_TEXT);
-				$('#relay4').html((state >> 3 & 0x1) ? ON_TEXT : OFF_TEXT);
+				$('#relay1').attr('src', (state & 0x1)      ? ON_IMG : OFF_IMG);
+				$('#relay2').attr('src', (state >> 1 & 0x1) ? ON_IMG : OFF_IMG);
+				$('#relay3').attr('src', (state >> 2 & 0x1) ? ON_IMG : OFF_IMG);
+				$('#relay4').attr('src', (state >> 3 & 0x1) ? ON_IMG : OFF_IMG);
 			}
 		</script>
 	</head>
 	<body>
 		<div class=page>
-			<h1>Light Fiddler</h1>
+			<img src="{{ url_for('static', filename='images/christmas_lights.svg') }}">
+			<img src="{{ url_for('static', filename='images/christmas_lights.svg') }}">
+			<img src="{{ url_for('static', filename='images/christmas_lights.svg') }}">
+			<img src="{{ url_for('static', filename='images/christmas_lights.svg') }}">
+			<img src="{{ url_for('static', filename='images/christmas_lights.svg') }}">
 			{% for message in get_flashed_messages() %}
 				<div class="flash">{{message}}</div>
 			{% endfor %}
 			<div>
-				<!-- TODO: Get a lightbulb image for these? -->
-				<button type="button" class="relay-button" id="relay4" onclick="toggle(4)">:(0):</button>
-				<button type="button" class="relay-button" id="relay3" onclick="toggle(3)">:(0):</button>
-				<button type="button" class="relay-button" id="relay2" onclick="toggle(2)">:(0):</button>
-				<button type="button" class="relay-button" id="relay1" onclick="toggle(1)">:(0):</button>
+				<img src="{{ url_for('static', filename='images/bulb_off.svg') }}" id="relay4">
+				<img src="{{ url_for('static', filename='images/bulb_off.svg') }}" id="relay3">
+				<img src="{{ url_for('static', filename='images/bulb_off.svg') }}" id="relay2">
+				<img src="{{ url_for('static', filename='images/bulb_off.svg') }}" id="relay1">
 				<br>
-				<button type="button" class="relay-button" id="all_on"  onclick='on("1 2 3 4")'>Turn all lights ON</button>
-				<button type="button" class="relay-button" id="all_off" onclick='off("1 2 3 4")'>Turn all lights OFF</button>
+				<button type="button" class="relay-button" id="all_on"  onclick='on("1 2 3 4")'>Turn all ON</button>
+				<button type="button" class="relay-button" id="all_off" onclick='off("1 2 3 4")'>Turn all OFF</button>
+			</div>
+			<div class=attribution-footer>
+				These images are shared under a Creative Commons -- Attribution
+				license through <a href="http://thenounproject.com" target="_blank">The Noun Project</a>
+				<br>
+				<a href="http://thenounproject.com/term/christmas-lights/84936/" target="_blank">The string lights</a>
+				were created by <a href="http://thenounproject.com/hayleyparke/" target="_blank">Hayley Parke</a>
+				<br>
+				<a href="http://thenounproject.com/term/light-bulb/78297/" target="_blank">The dim bulb</a>
+				was created by <a href="http://thenounproject.com/dinagar/" target="_blank">A. Dinagar</a>
+				<br>
+				<a href="http://thenounproject.com/term/light-bulb/77814/" target="_blank">The lit bulb</a>
+				was created by <a href="http://thenounproject.com/dinagar/" target="_blank">A. Dinagar</a>
 			</div>
 		</div>
 	</body>

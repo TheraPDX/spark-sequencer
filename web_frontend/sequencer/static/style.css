@@ -9,4 +9,5 @@ h1                 { color: #6F1C00; }
 .errorimg          { text-align: center; }
 
 div                { text-align: center; }
-.relay-button      { }
+.attribution-footer { padding-top: 2em; font-size: 0.7em; color: #AAA; }
+a                   { color: #AAA; }
