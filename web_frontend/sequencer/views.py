@@ -1,4 +1,4 @@
-from flask import render_template, jsonify
+from flask import render_template, request, jsonify
 from requests import get, post
 import json
 import urllib
@@ -14,22 +14,32 @@ def search():
 
 @app.route("/toggle/<relay_num>", methods=['POST'])
 def toggle(relay_num):
-    return jsonify({"new_state": post_to_sequencer('toggle', relay_num)})
+    return post_to_sequencer('toggle', relay_num)
 
 
 @app.route("/on/<relays>", methods=['POST'])
 def on(relays):
-    return jsonify({"new_state": post_to_sequencer('on', relays)})
+    return post_to_sequencer('on', relays)
 
 
 @app.route("/off/<relays>", methods=['POST'])
 def off(relays):
-    return jsonify({"new_state": post_to_sequencer('off', relays)})
+    return post_to_sequencer('off', relays)
+
+@app.route("/sequence/<seq>", methods=['POST'])
+def set_sequence(seq):
+    delay = request.form['delay']
+    length = request.form['length']
+    return post_to_sequencer(
+        'sequence',
+        '%s %s %s' %(seq, length, delay)
+    )
+
 
 
 @app.route("/get_state")
 def get_state():
-    return jsonify({'state': get_from_sequencer('state')})
+    return get_from_sequencer('state')
 
 
 def post_to_sequencer(function, args):
@@ -41,7 +51,13 @@ def post_to_sequencer(function, args):
     args = urllib.unquote(args)
     params = { 'access_token': app.config['ACCESS_TOKEN'], 'args': args }
     r = post(uri, params)
-    return json.loads(r.content)['return_value']
+    if r.ok:
+        return jsonify({'new_state': json.loads(r.content)['return_value']})
+
+    desc = json.loads(r.content).get('error_description')
+    if desc == "The access token provided is invalid.":
+        return jsonify({'error': 'bad access token'})
+    return jsonify({'error': 'unexpected error'})
 
 
 def get_from_sequencer(variable):
@@ -51,7 +67,13 @@ def get_from_sequencer(variable):
         variable
         )
     r = get("%s?access_token=%s" %(uri, app.config['ACCESS_TOKEN']))
-    return json.loads(r.content)['result']
+    if r.ok:
+        return jsonify({'state': json.loads(r.content)['result']})
+
+    desc = json.loads(r.content).get('error_description')
+    if desc == "The access token provided is invalid.":
+        return jsonify({'error': 'bad access token'})
+    return jsonify({'error': 'unexpected error'})
 
 
 @app.errorhandler(404)

@@ -9,7 +9,7 @@
 			var ON_IMG =  "{{ url_for('static', filename='images/bulb_on.svg') }}";
 			var OFF_IMG = "{{ url_for('static', filename='images/bulb_off.svg') }}";
 
-            $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+			$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
 
 			$(document).ready(function() {
 				get_state();
@@ -17,26 +17,50 @@
 				$("#relay2").click(function() {toggle(2)});
 				$("#relay3").click(function() {toggle(3)});
 				$("#relay4").click(function() {toggle(4)});
+				$("#seq1").click(function() {sequence('cylon', 1700, 1)});
+				$("#seq2").click(function() {sequence('walk', 1700, null)});
+				$("#seq4").click(function() {sequence('flap', 1700, null)});
+				$("#seq5").click(function() {sequence('chase', 1700, 2)});
 			});
+
+			function sequence(sequence, delay, length) {
+				send_request('sequence', sequence, {
+					'delay': delay,
+					'length': length
+				});
+			}
 
 			function toggle(relay) { send_request('toggle', relay)  }
 			function on(relays)    { send_request('on',     relays) }
 			function off(relays)   { send_request('off',    relays) }
-			function send_request(func, args)
+			function send_request(func, target, args)
 			{
 				$.ajax({
 					type: "POST",
-                    url: $SCRIPT_ROOT + '/' + func + '/' + args,
-					success: function(data) { display_current_state(data.new_state); },
+					url: $SCRIPT_ROOT + '/' + func + '/' + target,
+					data: args,
+					success: function(data) {
+						if (data.error) {
+							alert('Error: ' + data.error);
+						} else {
+							display_current_state(data.new_state);
+						}
+					},
 				});
 				return;
 			}
 
-            function get_state()
-            {
+			function get_state()
+			{
 				$.get(
 					$SCRIPT_ROOT + "/get_state",
-					function (data) { display_current_state(data.state); }
+					function (data) {
+						if (data.error) {
+							alert('Error: ' + data.error);
+						} else {
+							display_current_state(data.state);
+						}
+					}
 				);
 			}
 
@@ -51,11 +75,11 @@
 	</head>
 	<body>
 		<div class=page>
-			<img src="{{ url_for('static', filename='images/christmas_lights.svg') }}">
-			<img src="{{ url_for('static', filename='images/christmas_lights.svg') }}">
-			<img src="{{ url_for('static', filename='images/christmas_lights.svg') }}">
-			<img src="{{ url_for('static', filename='images/christmas_lights.svg') }}">
-			<img src="{{ url_for('static', filename='images/christmas_lights.svg') }}">
+			<img src="{{ url_for('static', filename='images/christmas_lights.svg') }}" id="seq1">
+			<img src="{{ url_for('static', filename='images/christmas_lights.svg') }}" id="seq2">
+			<img src="{{ url_for('static', filename='images/christmas_lights.svg') }}" id="seq3">
+			<img src="{{ url_for('static', filename='images/christmas_lights.svg') }}" id="seq4">
+			<img src="{{ url_for('static', filename='images/christmas_lights.svg') }}" id="seq5">
 			{% for message in get_flashed_messages() %}
 				<div class="flash">{{message}}</div>
 			{% endfor %}
